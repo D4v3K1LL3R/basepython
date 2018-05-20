@@ -1,8 +1,9 @@
+#-*- coding: utf-8 -*-
 from peewee import *
 import datetime
 from collections import OrderedDict
 import sys
-
+import sqlite3
 
 db=SqliteDatabase('diary.db')
 
@@ -37,9 +38,40 @@ def view_entries():
 def delete_entries():
     """eliminar registros"""
 
+def search_entries():
+    """BUSCAR COINCIDENCIAS EN LOS REGISTROS"""
+
+    try:
+        bd=sqlite3.connect("diary.db")
+        cursor=bd.cursor()
+
+        sear=input("Escriba lo que desea buscar: ").strip()
+        if not sear:
+            print("Busqueda Invalida")
+            exit()
+
+        sentence="SELECT * FROM entry WHERE content LIKE ?;"
+
+        cursor.execute(sentence, [ "%{}%".format(sear) ])
+
+        entres=cursor.fetchall()
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", ""))
+        print("|{:^20}|{:^10}|{:^50}|".format("ID", "Contenido", "Fecha"))
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", ""))
+
+        for id, content, timestamp in entres:
+            print("|{:^20}|{:^10}|{:^50}|".format(id , content, timestamp))
+
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", ""))
+
+        #print(entres)
+    except sqlite3.OperationalError as error:
+        print("Error al Abrir", error)
+
 menu=OrderedDict([
     ('a',add_entry),
     ('v',view_entries),
+    ('s',search_entries),
 ])
 
 def menu_loop():
