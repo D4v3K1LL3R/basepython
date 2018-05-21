@@ -14,7 +14,7 @@ class Entry(Model):
         database=db
 
 def add_entry():
-    """Agregar un registro"""
+    """AGREGAR UN REG. NUEVO"""
     print("Introduzca un registro, presione Ctrl+Z y Enter para Terminar")
     data=sys.stdin.read().strip()
     if data:
@@ -23,7 +23,7 @@ def add_entry():
             print("SE HA GUARDADO EXITOSAMENTE!")
 
 def view_entries():
-    """ver registros"""
+    """VER REGISTROS"""
     entries=Entry.select().order_by(Entry.timestamp.desc())
     for entry in entries:
         timestamp=entry.timestamp.strftime('%A %B %d, %Y %I:%M%p')
@@ -36,7 +36,39 @@ def view_entries():
         if next_entry == 'q':
             break
 def delete_entries():
-    """eliminar registros"""
+    """ELIMINAR UN REGISTRO"""
+    try:
+        bd=sqlite3.connect("diary.db")
+        cursor=bd.cursor()
+
+        sentence="SELECT *,rowid FROM entry;"
+
+        cursor.execute(sentence)
+
+        entres=cursor.fetchall()
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", "", ""))
+        print("|{:^20}|{:^10}|{:^50}|".format("ID", "Contenido", "Fecha", "Rowid"))
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", ""))
+
+        for id, content, timestamp, rowid in entres:
+            print("|{:^20}|{:^10}|{:^50}|".format(id , content, timestamp, rowid))
+
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", "", ""))
+
+        id_content= input("\nEsciba el Id del Registro a eliminar: ")
+        if not id_content:
+            print("No se escribió nada, intentelo de nuevo")
+            exit()
+
+        sentence="DELETE FROM entry WHERE rowid =?;"
+
+        #ELIMINACION
+        cursor.execute(sentence, [id_content])
+        bd.commit()
+        print("Se Eliminó Correctamente.!")
+
+    except sqlite3.OperationalError as error:
+        print("Error al Abrir:", error)
 
 def search_entries():
     """BUSCAR COINCIDENCIAS EN LOS REGISTROS"""
@@ -45,7 +77,7 @@ def search_entries():
         bd=sqlite3.connect("diary.db")
         cursor=bd.cursor()
 
-        sear=input("Escriba lo que desea buscar: ").strip()
+        sear=input("Escriba lo que desea buscar: ")
         if not sear:
             print("Busqueda Invalida")
             exit()
@@ -68,10 +100,36 @@ def search_entries():
     except sqlite3.OperationalError as error:
         print("Error al Abrir", error)
 
+def search_all():
+    """MOSTRAR TODOS LOS RESULTADOS"""
+    try:
+        bd=sqlite3.connect("diary.db")
+        cursor=bd.cursor()
+        sentence="SELECT * FROM entry;"
+
+        cursor.execute(sentence)
+
+        entres=cursor.fetchall()
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", ""))
+        print("|{:^20}|{:^10}|{:^50}|".format("ID", "Contenido", "Fecha"))
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", ""))
+
+        for id, content, timestamp in entres:
+            print("|{:^20}|{:^10}|{:^50}|".format(id , content, timestamp))
+
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", ""))
+
+        #print(entres)
+    except sqlite3.OperationalError as error:
+        print("Error al Abrir", error)
+
+
 menu=OrderedDict([
     ('a',add_entry),
     ('v',view_entries),
     ('s',search_entries),
+    ('*',search_all),
+    ('d',delete_entries),
 ])
 
 def menu_loop():
