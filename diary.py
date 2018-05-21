@@ -100,6 +100,46 @@ def search_entries():
     except sqlite3.OperationalError as error:
         print("Error al Abrir", error)
 
+def update_entries():
+    """ACTUALIZAR UN REGISTRO"""
+    try:
+        bd=sqlite3.connect("diary.db")
+        cursor=bd.cursor()
+
+        sentence="SELECT *,rowid FROM entry;"
+
+        cursor.execute(sentence)
+
+        entres=cursor.fetchall()
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", "", ""))
+        print("|{:^20}|{:^10}|{:^50}|".format("ID", "Contenido", "Fecha", "Rowid"))
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", ""))
+
+        for id, content, timestamp, rowid in entres:
+            print("|{:^20}|{:^10}|{:^50}|".format(id , content, timestamp, rowid))
+
+        print("+{:-<20}+{:-<10}+{:-<50}+".format("", "", "", ""))
+
+        #PETICION
+        id_content= input("\nEsciba el Id del Registro que desea Modificar: ")
+        if not id_content:
+            print("No se escribió nada, intentelo de nuevo")
+            exit()
+
+        #Nuevos Datos
+        content = input("\nNuevo Registro: ")
+
+        #actualizacion
+        sentence = "UPDATE entry SET content =? WHERE rowid=?;"
+
+        cursor.execute(sentence, [content, id])
+        bd.commit()
+        print("Actualizado.!")
+
+    except sqlite3.OperationalError as error:
+        print("Error al Abrir:", error)
+
+
 def search_all():
     """MOSTRAR TODOS LOS RESULTADOS"""
     try:
@@ -130,6 +170,7 @@ menu=OrderedDict([
     ('s',search_entries),
     ('*',search_all),
     ('d',delete_entries),
+    ('u',update_entries),
 ])
 
 def menu_loop():
